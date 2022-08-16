@@ -1,4 +1,4 @@
-def tomcatServerUrl = "tomcat server IP"
+def tomcatServerUrl = "http://65.2.122.226:8080"
 pipeline {
   agent any
   stages {
