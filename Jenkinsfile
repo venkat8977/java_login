@@ -1,4 +1,4 @@
-def tomcatServerUrl = "http://65.2.122.226:8080/"
+
 pipeline {
   agent any
   stages {
@@ -9,6 +9,6 @@ pipeline {
     }
     stage('Deploy') {
       steps {   
-         deploy adapters: [tomcat8(credentialsId: 'tomcat_credential', path: '', url: 'http://65.2.122.226:8080')], contextPath: 'tomcat', war: '**/**.war'
+         deploy adapters: [tomcat9(credentialsId: 'tomcat', path: '', url: 'http://43.205.191.61:8080')], contextPath: 'java_web_application', war: '**/*.war'
       }
     }
