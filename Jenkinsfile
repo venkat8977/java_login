@@ -1,47 +1,33 @@
 pipeline{
-    agent any
-    environment {
-        PATH = "$PATH:/usr/share/maven/bin"
-    }
-    stages{
-       stage('GetCode'){
-            steps{
-                git 'https://github.com/venkat8977/java_login.git'
-            }
-         }
-   stage('SonarQube analysis') {
-//    def scannerHome = tool 'SonarScanner 4.0';
+  agent any
+  stages{
+      stage("Scan"){
         steps{
-        withSonarQubeEnv('sonarqube-8.9.2') {
-        // If you have configured more than one global server connection, you can specify its name
-//      sh "${scannerHome}/bin/sonar-scanner"
-        sh "mvn sonar:sonar"
-    }    
-    }
-    }
-       stage('Build'){
-            steps{
-                sh 'mvn clean package'
-            }
+         withSonarQubeEnv(installationName: 'sonarqube-8.9.2', credentialsId: 'sonarqube-token'){
+         sh "mvn sonar:sonar"
          }
-      stage('Test'){
-            steps{
-                sh 'mvn test'
+        }
+      }
+      stage("Build"){
+        steps{
+            sh "mvn -B -DskipTests clean package"
+            sh "mv target/*.war target/myweb.war"
+             }
             }
-          post {
-                success {
-                    junit '**/target/surefire-reports/TEST-*.xml'
-                }
-            }
-         }
-        
-        
-        
-    stage('Deploy') {
-      steps {   
-         deploy adapters: [tomcat8(credentialsId: 'tomcat', path: '', url: 'http://13.127.59.104:8080')], contextPath: null, war: '**/**.war'
+      stage('Test') {
+        steps {
+        sh(script: 'mvn -Dmaven.test.failure.ignore test')
+      }
+      post {
+        always {
+            junit '**/target/surefire-reports/TEST-*.xml'
+             }
+           }
+      }
+      stage("deploy"){
+       steps{
+          deploy adapters: [tomcat8(credentialsId: 'tomcat-credentials', path: '', url: 'http://172.31.89.145:8080/')], contextPath: 'javaWebApp', war: '**/*.war'          
+          }
+        }
       }
     }
-       
-    }
-}
